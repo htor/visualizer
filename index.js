@@ -77,25 +77,27 @@ const captureAudio = () => {
     })
 }
 
-const loadDraggedAudio = (event, callback) => {
+const loadDraggedAudio = (event) => {
     event.stopPropagation()
     event.preventDefault()
     let file = event.dataTransfer.files[0]
     let reader = new FileReader()
     let filter = /^audio/i
-    if (!filter.test(file.type)) {
-        return callback(new Error(`dragged file was not an audio file`), null);
-    }
-    reader.onload = (event) => {
-        let arrayBuffer = event.target.result
-        audio.ctx.decodeAudioData(arrayBuffer)
-        .then(decodedBuffer => {
-            callback(null, { buffer: decodedBuffer, filename: file.name })
-        })
-        .catch(err => callback(err, null))
-    }
-    graphics.info = [`loading: ${file.name}`]
-    reader.readAsArrayBuffer(file)
+
+    return new Promise((resolve, reject) => {
+        if (!filter.test(file.type)) {
+            return reject(new Error(`dragged file is not an audio file`))
+        }
+        reader.onload = (event) => {
+            let arrayBuffer = event.target.result
+            return audio.ctx.decodeAudioData(arrayBuffer)
+                .then(decodedBuffer => {
+                    resolve({ buffer: decodedBuffer, filename: file.name })
+                })
+        }
+        graphics.info = [`loading: ${file.name}`]
+        reader.readAsArrayBuffer(file)
+    })
 }
 
 const analyseAudio = (audioInput) => {
@@ -352,11 +354,9 @@ const setup = () => {
     window.addEventListener('dragover', disableEvent)
 
     window.addEventListener('drop', (event) => {
-        loadDraggedAudio(event, (err, audioInput) => {
-            if (err)
-                return graphics.info = [`error: ${err.message.toLowerCase()}`]
-            analyseAudio(audioInput)        
-        })
+        loadDraggedAudio(event)
+            .then(analyseAudio)
+            .catch(err => graphics.info = [`error: ${err.message.toLowerCase()}`])
     })
 
     window.addEventListener('keydown', (event) => {
