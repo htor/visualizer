@@ -1,6 +1,6 @@
 const version = '0.3 alpha'
 const audio = {
-    output: true
+    muted: false
 }
 const graphics = {
     mode: 'tree',
@@ -69,9 +69,11 @@ const loadAudioFile = (filename, callback) => {
     })
 }
 
-const captureAudio = (callback) => {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            callback(null, { stream: stream, filename: `microphone` })
+const captureAudio = () => {
+    return navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        return { stream: stream, filename: `microphone` }
+    }).catch(err => {
+        throw new Error(`permission denied to microphone`)
     })
 }
 
@@ -112,7 +114,7 @@ const analyseAudio = (audioInput) => {
         audio.source = audio.ctx.createMediaStreamSource(audioInput.stream)
     }
     audio.source.connect(audio.analyser)
-    if (audio.output)
+    if (!audio.muted)
         audio.source.connect(audio.ctx.destination)
     audio.source.addEventListener('ended', () => {
         if (audio.stopped) {
@@ -169,9 +171,12 @@ const renderInfo = (info) => {
         ])
     }
     if (graphics.showInfo) {
+        if (audio.muted)
+            info = info.slice(0,1).concat([`audio: muted`]).concat(info.slice(1))
         info.forEach((line, lineno) => {
             graphics.ctx.fillText(line, 0, lineno * lineheight)
         })
+//                graphics.ctx.fillText(`, 0, graphics.ch - 4 * lineheight)
     }
     graphics.ctx.restore()
 }
@@ -342,6 +347,10 @@ const setup = () => {
     resizeGraphics()
 
     window.addEventListener('resize', resizeGraphics)
+    window.addEventListener('dragleave', disableEvent)
+    window.addEventListener('dragenter', disableEvent)
+    window.addEventListener('dragover', disableEvent)
+
     window.addEventListener('drop', (event) => {
         loadDraggedAudio(event, (err, audioInput) => {
             if (err)
@@ -349,33 +358,31 @@ const setup = () => {
             analyseAudio(audioInput)        
         })
     })
-    window.addEventListener('dragleave', disableEvent)
-    window.addEventListener('dragenter', disableEvent)
-    window.addEventListener('dragover', disableEvent)
+
     window.addEventListener('keydown', (event) => {
         if (event.keyCode === 70) {
             toggleFullscreen()
         } else if (event.keyCode === 82) {
-            captureAudio((err, audioInput) => {
-                if (err)
-                    return graphics.info = [`error: ${err.message.toLowerCase()}`]
-                analyseAudio(audioInput) 
-            })
+            captureAudio()
+                .then(analyseAudio)
+                .catch(err => graphics.info = [`error: ${err.message.toLowerCase()}`])
         } else if (event.keyCode === 77) {
+            audio.muted = !audio.muted
             if (!audio.source) return
-            if (audio.output) {
+            if (audio.muted) {
                 audio.source.disconnect(audio.ctx.destination)
             } else {
                 audio.source.connect(audio.ctx.destination)
             }
-            audio.output = !audio.output
         }
     })
+
     window.addEventListener('webkitfullscreenchange', (event) => {
         if (!document.webkitFullscreenElement) {
             graphics.showFullscreen = false;
         }
     })
+    
     window.addEventListener('wheel', event => {
         event.preventDefault()
         let zoomDelta = 0
@@ -418,6 +425,9 @@ const controls = () => {
     gui.add(graphics, 'showInfo').listen()
     gui.add(graphics, 'showData').listen()
     gui.add(graphics, 'clearFrames').listen()
+    let aud = gui.addFolder('audio')
+    aud.add(audio, 'muted').listen()
+    aud.close()
     gui.addColor(graphics, 'foreground').listen()
     gui.addColor(graphics, 'background').listen()
     gui.add(graphics, 'fontsize').min(0).max(100).step(1)
