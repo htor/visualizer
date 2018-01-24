@@ -102,14 +102,12 @@ const loadDraggedAudio = (event) => {
 }
 
 const analyseAudio = (audioInput) => {
-    if (audio.source) {
-        try { audio.source.stop() 
-        } catch (err) {
-        } finally { 
-            audio.source.disconnect(audio.ctx.destination)
-        } 
-        audio.stopped = true
-    }
+    if (audio.source instanceof AudioScheduledSourceNode)
+        audio.source.stop()
+    if (audio.source && !audio.muted)
+        audio.source.disconnect(audio.ctx.destination)
+    audio.stopped = true
+
     if (audioInput.buffer) { // audio file
         audio.source = audio.ctx.createBufferSource()
         audio.source.buffer = audioInput.buffer
@@ -320,11 +318,6 @@ const loop = () => {
     }, 1000 / graphics.fps)
 }
 
-const disableEvent = (event) => {
-    event.stopPropagation()
-    event.preventDefault()
-}
-
 const resizeGraphics = () => {
     graphics.cw = graphics.canvas.width = window.innerWidth
     graphics.ch = graphics.canvas.height = window.innerHeight
@@ -344,6 +337,16 @@ const toggleFullscreen = () => {
     }
 }
 
+const disableEvent = (event) => {
+    event.stopPropagation()
+    event.preventDefault()
+}
+
+const showError = (err) => {
+    console.error(err)
+    graphics.info = [`error: ${err.message.toLowerCase()}`]
+}
+
 const setup = () => {
     audio.ctx = new AudioContext()
     audio.analyser = audio.ctx.createAnalyser()
@@ -360,16 +363,15 @@ const setup = () => {
     window.addEventListener('drop', (event) => {
         loadDraggedAudio(event)
             .then(analyseAudio)
-            .catch(err => graphics.info = [`error: ${err.message.toLowerCase()}`])
+            .catch(showError)    
     })
-
     window.addEventListener('keydown', (event) => {
         if (event.keyCode === 70) {
             toggleFullscreen()
         } else if (event.keyCode === 82) {
             captureAudio()
                 .then(analyseAudio)
-                .catch(err => graphics.info = [`error: ${err.message.toLowerCase()}`])
+                .catch(showError)
         } else if (event.keyCode === 77) {
             audio.muted = !audio.muted
             if (!audio.source) return
@@ -383,7 +385,7 @@ const setup = () => {
 
     window.addEventListener('webkitfullscreenchange', (event) => {
         if (!document.webkitFullscreenElement) {
-            graphics.showFullscreen = false;
+            graphics.showFullscreen = false
         }
     })
     
