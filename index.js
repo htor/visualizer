@@ -1,6 +1,7 @@
 const version = '0.3 alpha'
 const audio = {
-    muted: false
+    muted: false,
+    fftSize: 2048
 }
 const graphics = {
     mode: 'tree',
@@ -39,7 +40,7 @@ const graphics = {
     defaultInfo: [
         `visualizer v${version}`, 
         ``, 
-        `drag an audio file here to start`,
+        `drag an audio file here to start or`,
         `press r to capture audio from microphone`,
         `press m to mute audio`,
         `press h to toggle all options`,
@@ -128,7 +129,8 @@ const analyseAudio = (audioInput) => {
     if (audioInput.buffer)
         audio.source.start(0)
     audio.bufferLength = audio.analyser.frequencyBinCount
-    audio.data = new Uint8Array(audio.bufferLength)
+    audio.waveData = new Uint8Array(audio.bufferLength)
+    audio.freqData = new Uint8Array(audio.bufferLength)
     graphics.showInfo = true
     graphics.info = [`playing: ${audioInput.filename}`]
 }
@@ -178,7 +180,6 @@ const renderInfo = (info) => {
         info.forEach((line, lineno) => {
             graphics.ctx.fillText(line, 0, lineno * lineheight)
         })
-//                graphics.ctx.fillText(`, 0, graphics.ch - 4 * lineheight)
     }
     graphics.ctx.restore()
 }
@@ -196,19 +197,20 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
         return
     graphics.totalbranches++
 
-    // compute new values 
+    // update values 
     let x2 = x1 - length * Math.sin(treeAngle * Math.PI / 180)
     let y2 = y1 - length * Math.cos(treeAngle * Math.PI / 180)
     let x2middle = (x1 + x2) / 2
     let y2middle = (y1 + y2) / 2
-    if (audio.data) {
-        length = graphics.growFactor * length + graphics.ch / (audio.data[random(0, audio.data.length - 1)] + 1)
+    if (audio.waveData) {
+        length = graphics.growFactor * length + graphics.ch / (audio.waveData[random(0, audio.waveData.length - 1)] + 1)
     } else {
         length = graphics.growFactor * length - graphics.ch / 100
     }
+
     renderLabel(`${graphics.totalbranches}`, x2, y2)
 
-    // render line
+    // draw
     graphics.ctx.beginPath()
     graphics.ctx.moveTo(x1, y1)
     if (graphics.line.difference)
@@ -220,11 +222,11 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
     } else {
         graphics.ctx.lineTo(x2, y2)
     }
-    if (graphics.totalbranches > 1) // don't render tree root
+    if (graphics.totalbranches > 1)
         graphics.ctx.stroke()
     graphics.ctx.closePath()
 
-    // recurse into all branches
+    // render all branches
     let a1 = graphics.branchFactor * graphics.angleEach
     for (let i = 0; i < graphics.branchFactor; i++, a1 += graphics.angleEach) {
         renderTree(x2, y2, length, angle, treeAngle + graphics.branchAngle + a1, depth - 1)
@@ -234,9 +236,9 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
 const renderOscilloscope = () => {
     graphics.ctx.save()
     graphics.ctx.beginPath()
-    let sliceWidth = graphics.cw / audio.bufferLength
-    for (let i = 0, x = 0; i < audio.bufferLength; i++, x += sliceWidth) {
-        let v = audio.data[i] / 128.0
+    let sliceWidth = graphics.cw / audio.waveData.length
+    for (let i = 0, x = 0; i < audio.waveData.length; i++, x += sliceWidth) {
+        let v = audio.waveData[i] / 128.0
         let y = v * graphics.ch / 2
         if(i === 0) {
             graphics.ctx.moveTo(x, y)
@@ -252,9 +254,9 @@ const renderOscilloscope = () => {
 const renderBars = () => {
     graphics.ctx.save()
     let barHeight
-    let barWidth = graphics.cw / audio.bufferLength
-    for (let i = 0, x = 0; i < audio.bufferLength; i++, x += barWidth + 1) {
-        barHeight = audio.data[i] * graphics.barHeight
+    let barWidth = graphics.cw / audio.freqData.length
+    for (let i = 0, x = 0; i < audio.freqData.length; i++, x += barWidth + 1) {
+        barHeight = audio.freqData[i] * graphics.barHeight
         graphics.ctx.fillStyle = graphics.foreground
         graphics.ctx.fillRect(x, graphics.ch - barHeight, barWidth, barHeight)
     }
@@ -262,7 +264,7 @@ const renderBars = () => {
 }
 
 const render = () => {
-    // colors and lines
+    // styles, colors, fonts
     if (graphics.clearFrames) {
         graphics.ctx.fillStyle = graphics.background
         graphics.ctx.fillRect(0, 0, graphics.cw, graphics.ch)
@@ -270,9 +272,15 @@ const render = () => {
     graphics.ctx.lineWidth = graphics.line.width
     graphics.ctx.strokeStyle = `${graphics.foreground}`
     graphics.ctx.setLineDash([graphics.line.dashWidth])
+    graphics.ctx.font = `${graphics.fontsize}px sans-serif`
 
-    if (audio.data)
-        audio.analyser.getByteTimeDomainData(audio.data)
+
+    // audio
+    audio.analyser.fftSize = audio.fftSize
+    if (audio.waveData) {
+        audio.analyser.getByteTimeDomainData(audio.waveData)
+        audio.analyser.getByteFrequencyData(audio.freqData)
+    }
 
     // time variables?
     //var d = new Date();
@@ -288,9 +296,6 @@ const render = () => {
     let zoomDelta = graphics.zoom.increase ? 
         graphics.zoom.speed / 100 : -(graphics.zoom.speed / 100)
     graphics.zoom.level += zoomDelta
-
-    // fonts
-    graphics.ctx.font = `${graphics.fontsize}px sans-serif`
 
     if (graphics.mode === 'tree') {
         graphics.totalbranches = 0
@@ -342,7 +347,6 @@ const toggleFullscreen = () => {
 const setup = () => {
     audio.ctx = new AudioContext()
     audio.analyser = audio.ctx.createAnalyser()
-    audio.analyser.fftSize = 2048;
     graphics.canvas = document.querySelector('canvas')
     graphics.ctx = graphics.canvas.getContext('2d', { alpha: false })
     graphics.info = graphics.defaultInfo
@@ -427,6 +431,7 @@ const controls = () => {
     gui.add(graphics, 'clearFrames').listen()
     let aud = gui.addFolder('audio')
     aud.add(audio, 'muted').listen()
+    aud.add(audio, 'fftSize', [1024, 2048, 4096, 8192]).listen()
     aud.close()
     gui.addColor(graphics, 'foreground').listen()
     gui.addColor(graphics, 'background').listen()
