@@ -347,6 +347,15 @@ const showError = (err) => {
     graphics.info = [`error: ${err.message.toLowerCase()}`]
 }
 
+const toggleMute = () => {
+    if (!audio.source) return
+    if (audio.muted) {
+        audio.source.disconnect(audio.ctx.destination)
+    } else {
+        audio.source.connect(audio.ctx.destination)
+    }
+}
+
 const setup = () => {
     audio.ctx = new AudioContext()
     audio.analyser = audio.ctx.createAnalyser()
@@ -374,12 +383,7 @@ const setup = () => {
                 .catch(showError)
         } else if (event.keyCode === 77) {
             audio.muted = !audio.muted
-            if (!audio.source) return
-            if (audio.muted) {
-                audio.source.disconnect(audio.ctx.destination)
-            } else {
-                audio.source.connect(audio.ctx.destination)
-            }
+            toggleMute()
         }
     })
 
@@ -432,7 +436,7 @@ const controls = () => {
     gui.add(graphics, 'showData').listen()
     gui.add(graphics, 'clearFrames').listen()
     let aud = gui.addFolder('audio')
-    aud.add(audio, 'muted').listen()
+    aud.add(audio, 'muted').listen().onChange(toggleMute)
     aud.add(audio, 'fftSize', [1024, 2048, 4096, 8192]).listen()
     aud.close()
     gui.addColor(graphics, 'foreground').listen()
