@@ -55,10 +55,10 @@ const initEvents = () => {
         let zoomDelta = 0
         if (event.deltaY < 0) {
             zoomDelta = 5
-        } else if (event.deltaY > 0 && graphics.tree.zoom.level >= 5) {
+        } else if (event.deltaY > 0 && graphics.tree.zoomLevel >= 5) {
             zoomDelta = -5
         }
-        graphics.tree.zoom.level += zoomDelta 
+        graphics.tree.zoomLevel += zoomDelta 
     })
 }
 
@@ -91,11 +91,12 @@ const toggleControls = () => {
     tree.add(graphics.tree, 'branchFactor').min(1).max(16).step(1).listen()
     tree.add(graphics.tree, 'branchAngle').min(0).max(360).step(1).listen()
     tree.add(graphics.tree, 'growFactor').min(0).max(5).step(0.01).listen()
-    tree.add(graphics.tree, 'rotationSpeed').min(0).max(250).step(0.1).listen()
-    let zoom = tree.addFolder('zoom')
-    zoom.add(graphics.tree.zoom, 'level').min(graphics.tree.zoom.minlevel).max(graphics.tree.zoom.maxlevel).step(1).listen()
-    zoom.add(graphics.tree.zoom, 'speed').min(0).max(250).step(1).listen()
-    zoom.close()
+    tree.add(graphics.tree, 'rotationSpeed')
+        .min(0).max(250).step(0.1).listen()
+    tree.add(graphics.tree, 'zoomLevel')
+        .min(graphics.tree.zoomMin).max(graphics.tree.zoomMax)
+        .step(1).listen()
+    tree.add(graphics.tree, 'zoomSpeed').min(0).max(250).step(1).listen()
     tree.close()
     let oscope = gui.addFolder('oscope')
     oscope.close()

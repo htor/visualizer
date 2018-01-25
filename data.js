@@ -13,13 +13,11 @@ const graphics = {
         branchAngle: 0,
         growFactor: 0.8,
         rotationSpeed: 5,
-        zoom: {
-            level: 40,
-            speed: 7,
-            increase: true,
-            minlevel: 0,
-            maxlevel: 2000
-        },
+        zoomLevel: 40,
+        zoomSpeed: 7,
+        zoomIncrease: true,
+        zoomMin: 0,
+        zoomMax: 2000
     },
     bars: {
         height: 2,

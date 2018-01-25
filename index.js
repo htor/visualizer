@@ -34,7 +34,7 @@ const renderInfo = (info) => {
                 `branch factor: ${graphics.tree.branchFactor}`,
                 `branch angle: ${graphics.tree.branchAngle.toFixed(0)}`,
                 `grow factor: ${graphics.tree.growFactor}`,
-                `zoom level: ${graphics.tree.zoom.level.toFixed(0)}`,
+                `zoom level: ${graphics.tree.zoomLevel.toFixed(0)}`,
                 `linewidth: ${graphics.lineWidth}`,
             ])
         if (graphics.mode === 'oscope')
@@ -169,19 +169,19 @@ const render = () => {
     //this.angle += this.speed*(this.seconds+1+(this.milliseconds/1000));
 
     // zoom
-    if(graphics.tree.zoom.level <= graphics.tree.zoom.minlevel)
-        graphics.tree.zoom.increase = true
-    if(graphics.tree.zoom.level >= random(graphics.tree.zoom.maxlevel / 2, graphics.tree.zoom.maxlevel))
-        graphics.tree.zoom.increase = false
-    let zoomDelta = graphics.tree.zoom.increase ? 
-        graphics.tree.zoom.speed / 100 : -(graphics.tree.zoom.speed / 100)
-    graphics.tree.zoom.level += zoomDelta
+    if(graphics.tree.zoomLevel <= graphics.tree.zoomMin)
+        graphics.tree.zoomIncrease = true
+    if(graphics.tree.zoomLevel >= random(graphics.tree.zoomMax / 2, graphics.tree.zoomMax))
+        graphics.tree.zoomIncrease = false
+    let zoomDelta = graphics.tree.zoomIncrease ? 
+        graphics.tree.zoomSpeed / 100 : -(graphics.tree.zoomSpeed / 100)
+    graphics.tree.zoomLevel += zoomDelta
 
     if (graphics.mode === 'tree') {
         graphics.totalbranches = 0
         graphics.tree.branchAngle += graphics.tree.rotationSpeed / 100
         graphics.angleEach = 360 / graphics.tree.branchFactor
-        renderTree(graphics.x, graphics.y + graphics.tree.zoom.level, graphics.tree.zoom.level, 
+        renderTree(graphics.x, graphics.y + graphics.tree.zoomLevel, graphics.tree.zoomLevel, 
             +graphics.tree.branchAngle.toFixed(2), 0, graphics.tree.depth, 0)
     } else if (graphics.mode === 'oscope') {
         renderOscilloscope()
