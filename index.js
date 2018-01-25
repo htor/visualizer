@@ -5,25 +5,29 @@ const audio = {
 }
 const graphics = {
     mode: 'tree',
-    depth: 3,
-    branchFactor: 8,
-    branchAngle: 0,
-    growFactor: 0.8,
-    rotationSpeed: 5,
-    zoom: {
-        level: 40,
-        speed: 7,
-        increase: true,
-        minlevel: 0,
-        maxlevel: 2000
+    tree: {
+        depth: 3,
+        branchFactor: 8,
+        branchAngle: 0,
+        growFactor: 0.8,
+        rotationSpeed: 5,
+        zoom: {
+            level: 40,
+            speed: 7,
+            increase: true,
+            minlevel: 0,
+            maxlevel: 2000
+        },
     },
-    line: {
-        curve: false,
+    bars: {
+        height: 2,
         width: 1,
-        difference: false,
-        dashWidth: 0
+        gap: 2
     },
-    barHeight: 2,
+    lineCurve: false,
+    lineWidth: 1,
+    lineDiff: false,
+    lineDWidth: 0,
     totalbranches: 0,
     foreground: '#e1e1e1',
     background: '#575454',
@@ -151,21 +155,21 @@ const renderInfo = (info) => {
         if (graphics.mode === 'tree')
             info = info.concat([
                 `total branches: ${graphics.totalbranches}`,
-                `tree depth: ${graphics.depth}`,
-                `branch factor: ${graphics.branchFactor}`,
-                `branch angle: ${graphics.branchAngle.toFixed(0)}`,
-                `grow factor: ${graphics.growFactor}`,
-                `zoom level: ${graphics.zoom.level.toFixed(0)}`,
-                `linewidth: ${graphics.line.width}`,
+                `tree depth: ${graphics.tree.depth}`,
+                `branch factor: ${graphics.tree.branchFactor}`,
+                `branch angle: ${graphics.tree.branchAngle.toFixed(0)}`,
+                `grow factor: ${graphics.tree.growFactor}`,
+                `zoom level: ${graphics.tree.zoom.level.toFixed(0)}`,
+                `linewidth: ${graphics.lineWidth}`,
             ])
         if (graphics.mode === 'oscope')
             info = info.concat([
-                `linewidth: ${graphics.line.width.toFixed(2)}`,
-                `dashwidth: ${graphics.line.dashWidth.toFixed(2)}`,
+                `linewidth: ${graphics.lineWidth.toFixed(2)}`,
+                `dashwidth: ${graphics.lineDWidth.toFixed(2)}`,
             ])
         if (graphics.mode === 'bars')
             info = info.concat([
-                `bar height: ${graphics.barHeight.toFixed(2)}`,
+                `bar height: ${graphics.bars.height.toFixed(2)}`,
             ])
         info = info.concat([
             `background: ${graphics.background}`,
@@ -202,9 +206,9 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
     let x2middle = (x1 + x2) / 2
     let y2middle = (y1 + y2) / 2
     if (audio.waveData) {
-        length = graphics.growFactor * length + graphics.ch / (audio.waveData[random(0, audio.waveData.length - 1)] + 1)
+        length = graphics.tree.growFactor * length + graphics.ch / (audio.waveData[random(0, audio.waveData.length - 1)] + 1)
     } else {
-        length = graphics.growFactor * length - graphics.ch / 100
+        length = graphics.tree.growFactor * length - graphics.ch / 100
     }
 
     renderLabel(`${graphics.totalbranches}`, x2, y2)
@@ -212,9 +216,9 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
     // draw
     graphics.ctx.beginPath()
     graphics.ctx.moveTo(x1, y1)
-    if (graphics.line.difference)
-        graphics.ctx.lineWidth = depth * graphics.line.width
-    if (graphics.line.curve) {
+    if (graphics.lineDiff)
+        graphics.ctx.lineWidth = depth * graphics.lineWidth
+    if (graphics.lineCurve) {
         graphics.ctx.quadraticCurveTo(graphics.cw / 2, graphics.ch / 2, x2middle, y2middle)
         graphics.ctx.moveTo(x2middle, y2middle)
         graphics.ctx.lineTo(x2, y2)
@@ -226,13 +230,14 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
     graphics.ctx.closePath()
 
     // render all branches
-    let a1 = graphics.branchFactor * graphics.angleEach
-    for (let i = 0; i < graphics.branchFactor; i++, a1 += graphics.angleEach) {
-        renderTree(x2, y2, length, angle, treeAngle + graphics.branchAngle + a1, depth - 1)
+    let a1 = graphics.tree.branchFactor * graphics.angleEach
+    for (let i = 0; i < graphics.tree.branchFactor; i++, a1 += graphics.angleEach) {
+        renderTree(x2, y2, length, angle, treeAngle + graphics.tree.branchAngle + a1, depth - 1)
     }
 }
 
 const renderOscilloscope = () => {
+    if (!audio.waveData) return
     graphics.ctx.save()
     graphics.ctx.beginPath()
     let sliceWidth = graphics.cw / audio.waveData.length
@@ -251,11 +256,12 @@ const renderOscilloscope = () => {
 }
 
 const renderBars = () => {
+    if (!audio.freqData) return
     graphics.ctx.save()
     let barHeight
-    let barWidth = graphics.cw / audio.freqData.length
-    for (let i = 0, x = 0; i < audio.freqData.length; i++, x += barWidth + 1) {
-        barHeight = audio.freqData[i] * graphics.barHeight
+    let barWidth = graphics.cw / audio.freqData.length + graphics.bars.width
+    for (let i = 0, x = 0; i < audio.freqData.length; i++, x += barWidth + graphics.bars.gap) {
+        barHeight = audio.freqData[i] * graphics.bars.height
         graphics.ctx.fillStyle = graphics.foreground
         graphics.ctx.fillRect(x, graphics.ch - barHeight, barWidth, barHeight)
     }
@@ -268,9 +274,9 @@ const render = () => {
         graphics.ctx.fillStyle = graphics.background
         graphics.ctx.fillRect(0, 0, graphics.cw, graphics.ch)
     }
-    graphics.ctx.lineWidth = graphics.line.width
+    graphics.ctx.lineWidth = graphics.lineWidth
     graphics.ctx.strokeStyle = `${graphics.foreground}`
-    graphics.ctx.setLineDash([graphics.line.dashWidth])
+    graphics.ctx.setLineDash([graphics.lineDWidth])
     graphics.ctx.font = `${graphics.fontsize}px sans-serif`
 
 
@@ -288,20 +294,20 @@ const render = () => {
     //this.angle += this.speed*(this.seconds+1+(this.milliseconds/1000));
 
     // zoom
-    if(graphics.zoom.level <= graphics.zoom.minlevel)
-        graphics.zoom.increase = true
-    if(graphics.zoom.level >= random(graphics.zoom.maxlevel / 2, graphics.zoom.maxlevel))
-        graphics.zoom.increase = false
-    let zoomDelta = graphics.zoom.increase ? 
-        graphics.zoom.speed / 100 : -(graphics.zoom.speed / 100)
-    graphics.zoom.level += zoomDelta
+    if(graphics.tree.zoom.level <= graphics.tree.zoom.minlevel)
+        graphics.tree.zoom.increase = true
+    if(graphics.tree.zoom.level >= random(graphics.tree.zoom.maxlevel / 2, graphics.tree.zoom.maxlevel))
+        graphics.tree.zoom.increase = false
+    let zoomDelta = graphics.tree.zoom.increase ? 
+        graphics.tree.zoom.speed / 100 : -(graphics.tree.zoom.speed / 100)
+    graphics.tree.zoom.level += zoomDelta
 
     if (graphics.mode === 'tree') {
         graphics.totalbranches = 0
-        graphics.branchAngle += graphics.rotationSpeed / 100
-        graphics.angleEach = 360 / graphics.branchFactor
-        renderTree(graphics.x, graphics.y + graphics.zoom.level, graphics.zoom.level, 
-            +graphics.branchAngle.toFixed(2), 0, graphics.depth, 0)
+        graphics.tree.branchAngle += graphics.tree.rotationSpeed / 100
+        graphics.angleEach = 360 / graphics.tree.branchFactor
+        renderTree(graphics.x, graphics.y + graphics.tree.zoom.level, graphics.tree.zoom.level, 
+            +graphics.tree.branchAngle.toFixed(2), 0, graphics.tree.depth, 0)
     } else if (graphics.mode === 'oscope') {
         renderOscilloscope()
     } else if (graphics.mode === 'bars') {
@@ -399,10 +405,10 @@ const setup = () => {
         let zoomDelta = 0
         if (event.deltaY < 0) {
             zoomDelta = 5
-        } else if (event.deltaY > 0 && graphics.zoom.level >= 5) {
+        } else if (event.deltaY > 0 && graphics.tree.zoom.level >= 5) {
             zoomDelta = -5
         }
-        graphics.zoom.level += zoomDelta 
+        graphics.tree.zoom.level += zoomDelta 
     })
 }
 
@@ -413,42 +419,48 @@ const prefix = (name) => {
 
 const controls = () => {
     let gui = new dat.GUI()
-//    gui.add(graphics, 'x').min(0).max(graphics.cw).step(1).listen()
-//    gui.add(graphics, 'y').min(0).max(graphics.ch).step(1).listen()
     gui.add(graphics, 'mode', ['tree', 'oscope', 'bars']).listen()
-    gui.add(graphics, 'depth').min(2).max(10).step(1).listen()
-    gui.add(graphics, 'branchFactor').min(1).max(16).step(1).listen()
-    gui.add(graphics, 'branchAngle').min(0).max(360).step(1).listen()
-    gui.add(graphics, 'growFactor').min(0).max(5).step(0.01).listen()
-    gui.add(graphics, 'rotationSpeed').min(0).max(250).step(0.1).listen()
-    let zoom = gui.addFolder('zoom')
-    zoom.add(graphics.zoom, 'level').min(graphics.zoom.minlevel).max(graphics.zoom.maxlevel).step(1).listen()
-    zoom.add(graphics.zoom, 'speed').min(0).max(250).step(1).listen()
+    let tree = gui.addFolder('tree')
+    tree.add(graphics.tree, 'depth').min(2).max(10).step(1).listen()
+    tree.add(graphics.tree, 'branchFactor').min(1).max(16).step(1).listen()
+    tree.add(graphics.tree, 'branchAngle').min(0).max(360).step(1).listen()
+    tree.add(graphics.tree, 'growFactor').min(0).max(5).step(0.01).listen()
+    tree.add(graphics.tree, 'rotationSpeed').min(0).max(250).step(0.1).listen()
+    let zoom = tree.addFolder('zoom')
+    zoom.add(graphics.tree.zoom, 'level').min(graphics.tree.zoom.minlevel).max(graphics.tree.zoom.maxlevel).step(1).listen()
+    zoom.add(graphics.tree.zoom, 'speed').min(0).max(250).step(1).listen()
     zoom.close()
-    let lines = gui.addFolder('line')
-    lines.add(graphics.line, 'curve').listen()
-    lines.add(graphics.line, 'difference').listen()
-    lines.add(graphics.line, 'width').min(0).max(20).step(0.01).listen()
-    lines.add(graphics.line, 'dashWidth').min(0).max(20).step(0.1).listen()
-    lines.close()
-    gui.add(graphics, 'barHeight').min(1).max(10).step(0.1).listen()
-    gui.add(graphics, 'showLabels').listen()
-    gui.add(graphics, 'showInfo').listen()
-    gui.add(graphics, 'showData').listen()
-    gui.add(graphics, 'clearFrames').listen()
+    tree.close()
+    let oscope = gui.addFolder('oscope')
+    oscope.close()
+    let bars = gui.addFolder('bars')
+    bars.add(graphics.bars, 'height').min(1).max(10).step(0.1).listen()
+    bars.add(graphics.bars, 'width').min(0).max(10).step(1).listen()
+    bars.add(graphics.bars, 'gap').min(-1).max(10).step(1).listen()
+    bars.close()
     let aud = gui.addFolder('audio')
     aud.add(audio, 'muted').listen().onChange(toggleMute)
     aud.add(audio, 'fftSize', [1024, 2048, 4096, 8192]).listen()
     aud.close()
-    gui.addColor(graphics, 'foreground').listen()
-    gui.addColor(graphics, 'background').listen()
-    gui.add(graphics, 'fontsize').min(0).max(100).step(1)
-    gui.add(graphics, 'lineheight').min(0).max(2).step(0.1)
-    gui.add(graphics, 'fps').min(1).max(60).step(1)
-    gui.add(graphics, 'showFps').onChange((y) => {
+    let common = gui.addFolder('common')
+    common.addColor(graphics, 'foreground').listen()
+    common.addColor(graphics, 'background').listen()
+    common.add(graphics, 'lineWidth').min(0).max(20).step(0.01).listen()
+    common.add(graphics, 'lineDWidth').min(0).max(20).step(0.1).listen()
+    common.add(graphics, 'lineCurve').listen()
+    common.add(graphics, 'lineDiff').listen()
+    common.add(graphics, 'showLabels').listen()
+    common.add(graphics, 'showInfo').listen()
+    common.add(graphics, 'showData').listen()
+    common.add(graphics, 'clearFrames').listen()
+    common.add(graphics, 'fontsize').min(0).max(100).step(1)
+    common.add(graphics, 'lineheight').min(0).max(2).step(0.1)
+    common.add(graphics, 'fps').min(1).max(60).step(1)
+    common.add(graphics, 'showFps').onChange((y) => {
         document.querySelector('#stats').style.display = y ? 'block': 'none'
     })
-    gui.add(graphics, 'fullscreen').listen().onChange(toggleFullscreen)
+    common.add(graphics, 'fullscreen').listen().onChange(toggleFullscreen)
+    common.open()
     gui.remember(graphics)
 //    dat.GUI.toggleHide()
 
