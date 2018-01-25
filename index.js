@@ -160,7 +160,8 @@ const renderInfo = (info) => {
             ])
         if (graphics.mode === 'oscope')
             info = info.concat([
-                `linewidth: ${graphics.line.width}`,
+                `linewidth: ${graphics.line.width.toFixed(2)}`,
+                `dashwidth: ${graphics.line.dashWidth.toFixed(2)}`,
             ])
         if (graphics.mode === 'bars')
             info = info.concat([
