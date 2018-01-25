@@ -44,6 +44,7 @@ const renderInfo = (info) => {
             ])
         if (graphics.mode === 'bars')
             info = info.concat([
+                `bar width: ${graphics.bars.width.toFixed(2)}`,
                 `bar height: ${graphics.bars.height.toFixed(2)}`,
             ])
         info = info.concat([
