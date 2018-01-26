@@ -15,7 +15,8 @@ const hexToRgb = (hex) => {
 const renderLabel = (label, x, y) => {
     if (graphics.showLabels) {
         graphics.ctx.fillStyle = graphics.foreground
-        graphics.ctx.fillText(`${label} (${Math.floor(x)},${Math.floor(y)})`, x + 10, y + 10)
+        graphics.ctx.fillText(`${label} ` +
+            `(${Math.floor(x)},${Math.floor(y)})`, x + 10, y + 10)
     }
 }
 
@@ -29,7 +30,7 @@ const renderInfo = (info) => {
     if (graphics.showData) {
         if (graphics.mode === 'tree')
             info = info.concat([
-                `total branches: ${graphics.totalbranches}`,
+                `total branches: ${graphics.tree.totalbranches}`,
                 `tree depth: ${graphics.tree.depth}`,
                 `branch factor: ${graphics.tree.branchFactor}`,
                 `branch angle: ${graphics.tree.branchAngle.toFixed(0)}`,
@@ -74,7 +75,7 @@ const renderInfo = (info) => {
 const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
     if(depth === 0)
         return
-    graphics.totalbranches++
+    graphics.tree.totalbranches++
 
     // update values 
     let x2 = x1 - length * Math.sin(treeAngle * Math.PI / 180)
@@ -82,12 +83,14 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
     let x2middle = (x1 + x2) / 2
     let y2middle = (y1 + y2) / 2
     if (audio.waveData) {
-        length = graphics.tree.growFactor * length + graphics.ch / (audio.waveData[random(0, audio.waveData.length - 1)] + 1)
+        //length = graphics.tree.growFactor * length + graphics.ch / 
+        //    (audio.waveData[random(0, audio.waveData.length - 1)] + 1)
+        length = graphics.tree.growFactor * length
     } else {
         length = graphics.tree.growFactor * length - graphics.ch / 100
     }
 
-    renderLabel(`${graphics.totalbranches}`, x2, y2)
+    renderLabel(`${graphics.tree.totalbranches}`, x2, y2)
 
     // draw
     graphics.ctx.beginPath()
@@ -95,20 +98,23 @@ const renderTree = (x1, y1, length, angle, treeAngle, depth) => {
     if (graphics.lineDiff)
         graphics.ctx.lineWidth = depth * graphics.lineWidth
     if (graphics.lineCurve) {
-        graphics.ctx.quadraticCurveTo(graphics.cw / 2, graphics.ch / 2, x2middle, y2middle)
+        graphics.ctx.quadraticCurveTo(graphics.cw / 2, 
+            graphics.ch / 2, x2middle, y2middle)
         graphics.ctx.moveTo(x2middle, y2middle)
         graphics.ctx.lineTo(x2, y2)
     } else {
         graphics.ctx.lineTo(x2, y2)
     }
-    if (graphics.totalbranches > 1)
+    if (graphics.tree.totalbranches > 1)
         graphics.ctx.stroke()
     graphics.ctx.closePath()
 
     // render all branches
     let a1 = graphics.tree.branchFactor * graphics.angleEach
-    for (let i = 0; i < graphics.tree.branchFactor; i++, a1 += graphics.angleEach) {
-        renderTree(x2, y2, length, angle, treeAngle + graphics.tree.branchAngle + a1, depth - 1)
+    for (let i = 0; i < graphics.tree.branchFactor; i++) {
+        renderTree(x2, y2, length, angle, 
+            treeAngle + graphics.tree.branchAngle + a1, depth - 1)
+        a1 += graphics.angleEach
     }
 }
 
@@ -144,17 +150,28 @@ const renderBars = () => {
     graphics.ctx.restore()
 }
 
+let i = 0, j = 0
 const render = () => {
+
+    let time = new Date()
+
     // styles, colors, fonts
     if (graphics.clearFrames) {
         graphics.ctx.fillStyle = graphics.background
         graphics.ctx.fillRect(0, 0, graphics.cw, graphics.ch)
     }
+    graphics.ctx.font = `${graphics.fontsize}px sans-serif`
     graphics.ctx.lineWidth = graphics.lineWidth
     graphics.ctx.strokeStyle = `${graphics.foreground}`
-    graphics.ctx.setLineDash([graphics.lineDWidth])
-    graphics.ctx.font = `${graphics.fontsize}px sans-serif`
 
+    // vary line dash
+//    graphics.lineDWidth = Math.abs(Math.sin((i += 0.001, i))) * 20 + 1
+//    graphics.lineDWidth = Math.sin(time.getMilliseconds() / 1000) * 20
+//    graphics.ctx.setLineDash([dash])
+    graphics.ctx.setLineDash([graphics.lineDWidth])
+
+    // vary grow factor
+    graphics.tree.growFactor = Math.abs(Math.sin((j += 0.001, j)) * 1)
 
     // audio
     audio.analyser.fftSize = audio.fftSize
@@ -162,12 +179,6 @@ const render = () => {
         audio.analyser.getByteTimeDomainData(audio.waveData)
         audio.analyser.getByteFrequencyData(audio.freqData)
     }
-
-    // time variables?
-    //var d = new Date();
-    //this.seconds = d.getSeconds();
-    //this.milliseconds = d.getMilliseconds();
-    //this.angle += this.speed*(this.seconds+1+(this.milliseconds/1000));
 
     // zoom
     if(graphics.tree.zoomLevel <= graphics.tree.zoomMin)
@@ -179,7 +190,7 @@ const render = () => {
     graphics.tree.zoomLevel += zoomDelta
 
     if (graphics.mode === 'tree') {
-        graphics.totalbranches = 0
+        graphics.tree.totalbranches = 0
         graphics.tree.branchAngle += graphics.tree.rotationSpeed / 100
         graphics.angleEach = 360 / graphics.tree.branchFactor
         renderTree(graphics.x, graphics.y + graphics.tree.zoomLevel, graphics.tree.zoomLevel, 

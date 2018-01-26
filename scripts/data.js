@@ -11,13 +11,14 @@ const graphics = {
         depth: 3,
         branchFactor: 8,
         branchAngle: 0,
-        growFactor: 0.8,
+        growFactor: 0,
         rotationSpeed: 5,
         zoomLevel: 40,
         zoomSpeed: 7,
         zoomIncrease: true,
         zoomMin: 0,
-        zoomMax: 2000
+        zoomMax: 2000,
+        totalbranches: 0
     },
     bars: {
         height: 2,
@@ -28,7 +29,6 @@ const graphics = {
     lineWidth: 1,
     lineDiff: false,
     lineDWidth: 0,
-    totalbranches: 0,
     foreground: '#e1e1e1',
     background: '#575454',
     showLabels: false,
@@ -39,8 +39,8 @@ const graphics = {
     fps: 60,
     fontsize: 12,
     lineheight: 1.2,
-    info: [],
     fullscreen: false,
+    info: [],
     defaultInfo: [
         `visualizer v${version}`, 
         ``, 
@@ -53,5 +53,8 @@ const graphics = {
         ``, 
     ]
 }
+
+window.graphics = graphics
+window.audio = audio
 
 export { version, graphics, audio }

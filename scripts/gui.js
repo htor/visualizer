@@ -85,7 +85,9 @@ const toggleFullscreen = () => {
 
 const toggleControls = () => {
     let gui = new dat.GUI()
+    let modes = {}
     gui.add(graphics, 'mode', ['tree', 'oscope', 'bars']).listen()
+        .onChange(mode => modes[mode].open())
     let tree = gui.addFolder('tree')
     tree.add(graphics.tree, 'depth').min(2).max(10).step(1).listen()
     tree.add(graphics.tree, 'branchFactor').min(1).max(16).step(1).listen()
@@ -97,7 +99,7 @@ const toggleControls = () => {
         .min(graphics.tree.zoomMin).max(graphics.tree.zoomMax)
         .step(1).listen()
     tree.add(graphics.tree, 'zoomSpeed').min(0).max(250).step(1).listen()
-    tree.close()
+    tree.open()
     let oscope = gui.addFolder('oscope')
     oscope.close()
     let bars = gui.addFolder('bars')
@@ -127,7 +129,10 @@ const toggleControls = () => {
         document.querySelector('#stats').style.display = y ? 'block': 'none'
     })
     common.add(graphics, 'fullscreen').listen().onChange(toggleFullscreen)
-    common.open()
+    common.close()
+    modes.tree = tree
+    modes.oscope = oscope
+    modes.bars = bars
     gui.remember(graphics)
 //    dat.GUI.toggleHide()
 
@@ -142,10 +147,4 @@ const toggleControls = () => {
 
 }
 
-export { 
-    initEvents, 
-    resizeGraphics,
-    toggleControls, 
-    toggleMute, 
-    toggleFullscreen 
-} 
+export { initEvents, resizeGraphics, toggleControls, toggleMute, toggleFullscreen } 
