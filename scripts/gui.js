@@ -96,9 +96,7 @@ const toggleFullscreen = () => {
 
 const toggleControls = () => {
     let gui = new dat.GUI()
-    let modes = {}
     gui.add(graphics, 'mode', ['tree', 'oscope', 'bars']).listen()
-        .onChange(mode => modes[mode].open())
     let tree = gui.addFolder('tree')
     tree.add(graphics.tree, 'depth').min(2).max(10).step(1).listen()
     tree.add(graphics.tree, 'branchFactor').min(1).max(16).step(1).listen()
@@ -110,9 +108,7 @@ const toggleControls = () => {
         .min(graphics.tree.zoomMin).max(graphics.tree.zoomMax)
         .step(1).listen()
     tree.add(graphics.tree, 'zoomSpeed').min(0).max(250).step(1).listen()
-    tree.open()
-    let oscope = gui.addFolder('oscope')
-    oscope.close()
+    tree.close()
     let bars = gui.addFolder('bars')
     bars.add(graphics.bars, 'height').min(1).max(10).step(0.1).listen()
     bars.add(graphics.bars, 'width').min(0).max(10).step(1).listen()
@@ -123,16 +119,17 @@ const toggleControls = () => {
     aud.add(audio, 'fftSize', [1024, 2048, 4096, 8192]).listen()
     aud.close()
     let common = gui.addFolder('common')
+    common.addColor(graphics, 'foreground').listen()
+    common.addColor(graphics, 'background').listen()
     common.add(graphics, 'composition', [
         'source-over', 
         'hard-light',
         'soft-light',
         'difference',
     ]).listen()
-    common.addColor(graphics, 'foreground').listen()
-    common.addColor(graphics, 'background').listen()
     common.add(graphics, 'lineWidth').min(0).max(20).step(0.01).listen()
     common.add(graphics, 'lineDWidth').min(0).max(20).step(0.1).listen()
+    common.add(graphics, 'lineCap', ['butt', 'round', 'square']).listen()
     common.add(graphics, 'lineCurve').listen()
     common.add(graphics, 'lineDiff').listen()
     common.add(graphics, 'showLabels').listen()
@@ -148,9 +145,6 @@ const toggleControls = () => {
     })
     common.add(graphics, 'fullscreen').listen().onChange(toggleFullscreen)
     common.close()
-    modes.tree = tree
-    modes.oscope = oscope
-    modes.bars = bars
     gui.remember(graphics)
 //    dat.GUI.toggleHide()
 

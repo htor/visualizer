@@ -35,6 +35,7 @@ const graphics = {
     lineDiff: false,
     lineDWidth: 0,
     lineDWidthSpeed: 0,
+    lineCap: 'butt',
     foreground: '#5f6daf',
     background: '#ffffff',
     showLabels: false,

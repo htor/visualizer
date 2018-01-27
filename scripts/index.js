@@ -156,7 +156,8 @@ const render = () => {
     }
     graphics.ctx.font = `${graphics.fontsize}px sans-serif`
     graphics.ctx.lineWidth = graphics.lineWidth
-    graphics.ctx.strokeStyle = `${graphics.foreground}`
+    graphics.ctx.strokeStyle = graphics.foreground
+    graphics.ctx.lineCap = graphics.lineCap
     graphics.lineDWidthSpeed += 0.001
 
 //    graphics.lineDWidth = Math.abs(
