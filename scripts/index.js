@@ -112,12 +112,12 @@ const renderTree = (x1, y1, length, angle, depth) => {
     let y2 = y1 - length * Math.cos(angle * Math.PI / 180)
     let x2middle = (x1 + x2) / 2
     let y2middle = (y1 + y2) / 2
-    let freqSum = audio.midFreqs.map(f => f.amount)
+    let freq = audio.midFreqs.map(f => f.amount)
         .reduce((f1, f2) => Math.max(f1, f2))
-    // nervous, giggly
+    // shaky
 //    let waveSum = graphics.tree.growFactor * length + graphics.ch / 
 //            (audio.waveData[random(0, audio.waveData.length - 1)] + 1)
-    length = graphics.tree.growFactor * length + 0.1 * freqSum
+    length = graphics.tree.growFactor * length + 0.2 * freq
     angle += graphics.tree.branchAngle
     depth -= 1
 
@@ -146,11 +146,9 @@ const renderTree = (x1, y1, length, angle, depth) => {
 }
 
 const render = () => {
-
     analyseAudio()
 
     // common
-    let time = new Date()
     graphics.ctx.globalCompositeOperation = graphics.composition
     if (graphics.clearFrames) {
         graphics.ctx.fillStyle = graphics.background
@@ -160,11 +158,10 @@ const render = () => {
     graphics.ctx.lineWidth = graphics.lineWidth
     graphics.ctx.strokeStyle = `${graphics.foreground}`
     graphics.lineDWidthSpeed += 0.001
+
 //    graphics.lineDWidth = Math.abs(
 //        Math.sin(graphics.lineDWidthSpeed)
 //    ) * 20 + 1
-//    graphics.lineDWidth = Math.sin(time.getMilliseconds() / 1000) * 20
-//    graphics.ctx.setLineDash([dash])
     graphics.ctx.setLineDash([graphics.lineDWidth])
 
     // zoom
@@ -182,19 +179,17 @@ const render = () => {
         graphics.tree.totalbranches = 0
         graphics.tree.branchAngle += graphics.tree.rotationSpeed / 100
         graphics.angleEach = 360 / graphics.tree.branchFactor
-//        graphics.tree.growSpeed += 0.001
-//        graphics.tree.growFactor = Math.abs(
-//            Math.sin(graphics.tree.growSpeed) * 1
-//        )
+        graphics.tree.growSpeed += 0.001
+        graphics.tree.growFactor = Math.abs(
+            Math.sin(graphics.tree.growSpeed) * 1.5
+        )
         renderTree(graphics.x, graphics.y + graphics.tree.zoomLevel, 
             graphics.tree.zoomLevel, 0, graphics.tree.depth)
     } else if (graphics.mode === 'oscope') {
         renderOscilloscope()
     } else if (graphics.mode === 'bars') {
         renderBars()
-    } else if (graphics.mode === 'dots') {
     }
-
     renderInfo(graphics.info)
 }
 
@@ -209,13 +204,42 @@ const setup = () => {
 //    captureAudio().then(initAudio)
 }
 
-const loop = () => {
+const renderLoop = () => {
     render()
     setTimeout(() => {
-        requestAnimationFrame(loop)
+        requestAnimationFrame(renderLoop)
     }, 1000 / graphics.fps)
 }
 
+const timeLoop = () => {
+    let startTime = new Date()
+    setInterval(() => {
+        let time = new Date()
+        if ((time - startTime) / 1000 < 10) return
+        if (time.getSeconds() === 42) {
+            let bFactorDelta = 0
+            if (graphics.tree.branchFactor >= 16) {
+                graphics.tree.branchIncrease = false
+            } else if (graphics.tree.branchFactor <= 2) {
+                graphics.tree.branchIncrease = true
+            }
+            if (graphics.tree.branchIncrease && graphics.tree.depth < 5) {
+                bFactorDelta = 1
+            } else if (!graphics.tree.branchIncrease) {
+                bFactorDelta = -1
+            }
+            graphics.tree.branchFactor += bFactorDelta
+        }
+        if (random(0, time.getSeconds()) === 42 ) {
+            graphics.tree.depth += 
+            graphics.tree.branchFactor < 10 ?
+                1 : graphics.tree.depth <= 3 ? 0 : -1 
+            graphics.tree.rotationSpeed += 2
+        }
+    }, 1000)
+}
+
 setup()
-loop()
+renderLoop()
+timeLoop()
 toggleControls()

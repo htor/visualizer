@@ -50,6 +50,8 @@ const initEvents = () => {
             graphics.showFps = !graphics.showFps
             document.querySelector('#stats')
                 .style.display = graphics.showFps ? 'block': 'none'
+        } else if (event.key === 'i') {
+            graphics.showInfo = !graphics.showInfo
         }
     })
 
@@ -101,9 +103,9 @@ const toggleControls = () => {
     tree.add(graphics.tree, 'depth').min(2).max(10).step(1).listen()
     tree.add(graphics.tree, 'branchFactor').min(1).max(16).step(1).listen()
     tree.add(graphics.tree, 'branchAngle').min(0).max(360).step(1).listen()
-    tree.add(graphics.tree, 'growFactor').min(0).max(5).step(0.01).listen()
     tree.add(graphics.tree, 'rotationSpeed')
         .min(0).max(250).step(0.1).listen()
+    tree.add(graphics.tree, 'growFactor').min(0).max(5).step(0.01).listen()
     tree.add(graphics.tree, 'zoomLevel')
         .min(graphics.tree.zoomMin).max(graphics.tree.zoomMax)
         .step(1).listen()

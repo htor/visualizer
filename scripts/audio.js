@@ -84,11 +84,10 @@ const analyseAudio = () => {
                 amount: d
             }
         })
-        audio.lowFreqs = audio.freqBands.filter(b => 
-            b.freq < 160)
-        audio.midFreqs = audio.freqBands.filter(b => 
+        audio.lowFreqs = audio.freqBands.filter(b => b.freq < 160)
+        audio.midFreqs = audio.freqBands.filter(b =>
             b.freq >= 160 && b.freq < 1280)
-        audio.hiFreqs = audio.freqBands.filter(b => b.freq >= 1280)
+        audio.highFreqs = audio.freqBands.filter(b => b.freq >= 1280)
     }
 }
 

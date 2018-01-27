@@ -1,8 +1,8 @@
-const version = '0.5.0-alpha'
+const version = '0.6.0-alpha'
 
 const audio = {
-//    muted: true,
     muted: false,
+    // muted: true,
     fftSize: 8192
 }
 
@@ -13,10 +13,12 @@ const graphics = {
         depth: 3,
         branchFactor: 8,
         branchAngle: 0,
+        branchIncrease: true,
         growFactor: 1,
         growSpeed: 0,
-        rotationSpeed: 5,
-        zoomLevel: 100,
+        rotationSpeed: 20,
+        rotationIncrease: false,
+        zoomLevel: 300,
         zoomSpeed: 0,
         zoomIncrease: true,
         zoomMin: 0,
@@ -33,8 +35,8 @@ const graphics = {
     lineDiff: false,
     lineDWidth: 0,
     lineDWidthSpeed: 0,
-    foreground: '#e1e1e1',
-    background: '#575454',
+    foreground: '#5f6daf',
+    background: '#ffffff',
     showLabels: false,
     showFps: false,
     showInfo: true,
