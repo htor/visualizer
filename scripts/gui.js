@@ -1,7 +1,12 @@
 import dat from 'dat.gui'
 import Stats from 'stats.js'
 import { graphics, audio } from './data'
-import { captureAudio, loadDraggedAudio, analyseAudio } from './audio'
+import { captureAudio, loadDraggedAudio, initAudio } from './audio'
+
+// TODO support all browsers webkit, moz, ie
+const prefix = (name) => {
+    //if (name in window) return name
+}
 
 const disableEvent = (event) => {
     event.stopPropagation()
@@ -28,19 +33,23 @@ const initEvents = () => {
 
     window.addEventListener('drop', (event) => {
         loadDraggedAudio(event)
-            .then(analyseAudio)
+            .then(initAudio)
             .catch(showError)    
     })
     window.addEventListener('keydown', (event) => {
-        if (event.keyCode === 70) {
+        if (event.key === 'f') {
             toggleFullscreen()
-        } else if (event.keyCode === 82) {
+        } else if (event.key === 'r') {
             captureAudio()
-                .then(analyseAudio)
+                .then(initAudio)
                 .catch(showError)
-        } else if (event.keyCode === 77) {
+        } else if (event.key === 'm') {
             audio.muted = !audio.muted
             toggleMute()
+        } else if (event.key === 'q') {
+            graphics.showFps = !graphics.showFps
+            document.querySelector('#stats')
+                .style.display = graphics.showFps ? 'block': 'none'
         }
     })
 
@@ -125,8 +134,9 @@ const toggleControls = () => {
     common.add(graphics, 'fontsize').min(0).max(100).step(1)
     common.add(graphics, 'lineheight').min(0).max(2).step(0.1)
     common.add(graphics, 'fps').min(1).max(60).step(1)
-    common.add(graphics, 'showFps').onChange((y) => {
-        document.querySelector('#stats').style.display = y ? 'block': 'none'
+    common.add(graphics, 'showFps').listen().onChange(() => {
+        document.querySelector('#stats').style.display = 
+            graphics.showFps ? 'block': 'none'
     })
     common.add(graphics, 'fullscreen').listen().onChange(toggleFullscreen)
     common.close()
@@ -147,4 +157,10 @@ const toggleControls = () => {
 
 }
 
-export { initEvents, resizeGraphics, toggleControls, toggleMute, toggleFullscreen } 
+export { 
+    initEvents, 
+    resizeGraphics, 
+    toggleControls, 
+    toggleMute, 
+    toggleFullscreen 
+} 

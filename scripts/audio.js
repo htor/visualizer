@@ -10,11 +10,12 @@ const loadAudioFile = (filename, callback) => {
 }
 
 const captureAudio = () => {
-    return navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        return { stream: stream, filename: `microphone` }
-    }).catch(err => {
-        throw new Error(`permission denied to microphone`)
-    })
+    return navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            return { stream: stream, filename: `microphone` }
+        }).catch(err => {
+            throw new Error(`permission denied to microphone`)
+        })
 }
 
 const loadDraggedAudio = (event) => {
@@ -40,7 +41,7 @@ const loadDraggedAudio = (event) => {
     })
 }
 
-const analyseAudio = (audioInput) => {
+const initAudio = (audioInput) => {
     if (audio.source instanceof AudioScheduledSourceNode)
         audio.source.stop()
     if (audio.source && !audio.muted)
@@ -72,4 +73,23 @@ const analyseAudio = (audioInput) => {
     graphics.info = [`playing: ${audioInput.filename}`]
 }
 
-export { captureAudio, loadDraggedAudio, analyseAudio }
+const analyseAudio = () => {
+    audio.analyser.fftSize = audio.fftSize
+    if (audio.bufferLength) {
+        audio.analyser.getByteTimeDomainData(audio.waveData)
+        audio.analyser.getByteFrequencyData(audio.freqData)
+        audio.freqBands = Array.from(audio.freqData).map((d, i) => {
+            return { 
+                freq: i * audio.ctx.sampleRate / audio.analyser.fftSize,
+                amount: d
+            }
+        })
+        audio.lowFreqs = audio.freqBands.filter(b => 
+            b.freq < 160)
+        audio.midFreqs = audio.freqBands.filter(b => 
+            b.freq >= 160 && b.freq < 1280)
+        audio.hiFreqs = audio.freqBands.filter(b => b.freq >= 1280)
+    }
+}
+
+export { captureAudio, loadDraggedAudio, initAudio, analyseAudio }

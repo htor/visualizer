@@ -1,4 +1,4 @@
-const version = '0.4 alpha'
+const version = '0.5.0-alpha'
 
 const audio = {
     muted: false,
@@ -11,10 +11,11 @@ const graphics = {
         depth: 3,
         branchFactor: 8,
         branchAngle: 0,
-        growFactor: 0,
+        growFactor: 1,
+        growSpeed: 0,
         rotationSpeed: 5,
-        zoomLevel: 40,
-        zoomSpeed: 7,
+        zoomLevel: 100,
+        zoomSpeed: 5,
         zoomIncrease: true,
         zoomMin: 0,
         zoomMax: 2000,
@@ -29,6 +30,7 @@ const graphics = {
     lineWidth: 1,
     lineDiff: false,
     lineDWidth: 0,
+    lineDWidthSpeed: 0,
     foreground: '#e1e1e1',
     background: '#575454',
     showLabels: false,
@@ -43,7 +45,6 @@ const graphics = {
     info: [],
     defaultInfo: [
         `visualizer v${version}`, 
-        ``, 
         `drag an audio file here to start or`,
         `press r to capture audio from microphone`,
         `press m to mute audio`,
