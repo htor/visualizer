@@ -223,7 +223,7 @@ const timeLoop = () => {
             } else if (graphics.tree.branchFactor <= 2) {
                 graphics.tree.branchIncrease = true
             }
-            if (graphics.tree.branchIncrease && graphics.tree.depth < 5) {
+            if (graphics.tree.branchIncrease && graphics.tree.depth < 4) {
                 bFactorDelta = 1
             } else if (!graphics.tree.branchIncrease) {
                 bFactorDelta = -1
