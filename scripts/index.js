@@ -151,6 +151,7 @@ const render = () => {
 
     // common
     let time = new Date()
+    graphics.ctx.globalCompositeOperation = graphics.composition
     if (graphics.clearFrames) {
         graphics.ctx.fillStyle = graphics.background
         graphics.ctx.fillRect(0, 0, graphics.cw, graphics.ch)

@@ -1,12 +1,14 @@
 const version = '0.5.0-alpha'
 
 const audio = {
+//    muted: true,
     muted: false,
-    fftSize: 2048
+    fftSize: 8192
 }
 
 const graphics = {
     mode: 'tree',
+    composition: 'source-over',
     tree: {
         depth: 3,
         branchFactor: 8,
@@ -15,7 +17,7 @@ const graphics = {
         growSpeed: 0,
         rotationSpeed: 5,
         zoomLevel: 100,
-        zoomSpeed: 5,
+        zoomSpeed: 0,
         zoomIncrease: true,
         zoomMin: 0,
         zoomMax: 2000,

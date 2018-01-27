@@ -121,6 +121,12 @@ const toggleControls = () => {
     aud.add(audio, 'fftSize', [1024, 2048, 4096, 8192]).listen()
     aud.close()
     let common = gui.addFolder('common')
+    common.add(graphics, 'composition', [
+        'source-over', 
+        'hard-light',
+        'soft-light',
+        'difference',
+    ]).listen()
     common.addColor(graphics, 'foreground').listen()
     common.addColor(graphics, 'background').listen()
     common.add(graphics, 'lineWidth').min(0).max(20).step(0.01).listen()
