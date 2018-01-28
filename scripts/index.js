@@ -1,24 +1,27 @@
 import { initEvents, resizeGraphics, toggleControls } from './gui'
 import { version, graphics, audio } from './data'
 import { captureAudio, initAudio, analyseAudio } from './audio'
-
-const random = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
-const hexToRgb = (hex) => {
-    let result = /^#?([a-f\d]{1,2})([a-f\d]{1,2})([a-f\d]{1,2})$/i.exec(hex)
-    return [parseInt(result[1], 16), 
-            parseInt(result[2], 16), 
-            parseInt(result[3], 16)]
-}
+import { random, randomColor, rgbaString } from './utils'
 
 const renderLabel = (label, x, y) => {
     if (graphics.showLabels) {
-        graphics.ctx.fillStyle = graphics.foreground
+        graphics.ctx.fillStyle = rgbaString(graphics.foreground)
         graphics.ctx.fillText(`${label} ` +
             `(${Math.floor(x)},${Math.floor(y)})`, x + 10, y + 10)
     }
+}
+
+const renderHelp = () => {
+    let lineno = 1
+    let lineheight = graphics.fontsize * graphics.lineheight
+
+    graphics.ctx.save()
+    graphics.ctx.fillStyle = rgbaString(graphics.foreground)
+    graphics.ctx.translate(24, 28)
+    graphics.helpText.forEach((line, lineno) => {
+        graphics.ctx.fillText(line, 0, lineno * lineheight)
+    })
+    graphics.ctx.restore()
 }
 
 const renderInfo = (info) => {
@@ -29,9 +32,15 @@ const renderInfo = (info) => {
     let lineheight = graphics.fontsize * graphics.lineheight
     
     graphics.ctx.save()
-    graphics.ctx.textBaseline = 'middle'
-    graphics.ctx.fillStyle = graphics.foreground
+    graphics.ctx.fillStyle = rgbaString(graphics.foreground)
     graphics.ctx.translate(24, 28)
+
+    if (audio.muted)
+        info = info.slice(0,1)
+            .concat([`audio: muted`])
+            .concat(info.slice(1))
+    if (audio.waveData)
+        info = info.concat([`mode: ${graphics.mode}`])
 
     if (graphics.showData) {
         if (graphics.mode === 'tree')
@@ -55,16 +64,14 @@ const renderInfo = (info) => {
                 `bar height: ${graphics.bars.height.toFixed(2)}`,
             ])
         info = info.concat([
-            `background: ${graphics.background}`,
-            `foreground: ${graphics.foreground}`,
+            `foreground: ${rgbaString(graphics.foreground)}`,
+            `background: ${rgbaString(graphics.background)}`,
             `fps: ${graphics.fps}`,
         ])
     }
 
-    if (audio.muted)
-        info = info.slice(0,1)
-            .concat([`audio: muted`])
-            .concat(info.slice(1))
+    if (!audio.bufferLength)
+        info = info.concat([``], graphics.defaultInfo)
 
     info.forEach((line, lineno) => {
         graphics.ctx.fillText(line, 0, lineno * lineheight)
@@ -73,7 +80,6 @@ const renderInfo = (info) => {
 }
 
 const renderOscilloscope = () => {
-    if (!audio.waveData) return
     graphics.ctx.save()
     graphics.ctx.beginPath()
     let sliceWidth = graphics.cw / audio.waveData.length
@@ -92,31 +98,43 @@ const renderOscilloscope = () => {
 }
 
 const renderBars = () => {
-    if (!audio.freqData) return
     graphics.ctx.save()
     let barHeight
     let barWidth = graphics.cw / audio.freqData.length + graphics.bars.width
     for (let i = 0, x = 0; i < audio.freqData.length; i++) {
         barHeight = audio.freqData[i] * graphics.bars.height
-        graphics.ctx.fillStyle = graphics.foreground
+        graphics.ctx.fillStyle = rgbaString(graphics.foreground)
         graphics.ctx.fillRect(x, graphics.ch - barHeight, barWidth, barHeight)
         x += barWidth + graphics.bars.gap
     }
     graphics.ctx.restore()
 }
 
+const renderLines = () => {
+    graphics.ctx.save()
+    let barHeight
+    let barWidth = graphics.cw / audio.freqData.length + graphics.bars.width
+    for (let i = 0, x = 0; i < audio.freqData.length; i++) {
+        barHeight = Math.sin(audio.freqData[i]) * graphics.ch
+        graphics.ctx.fillStyle = rgbaString(graphics.foreground)
+        graphics.ctx.fillRect(x, 0, barWidth, graphics.ch)
+        x += barWidth + graphics.bars.gap
+    }
+    graphics.ctx.restore()
+}
+
 const renderTree = (x1, y1, length, angle, depth) => {
-    if(depth === 0 || !audio.waveData) return
+    if(depth === 0) return
 
     let x2 = x1 - length * Math.sin(angle * Math.PI / 180)
     let y2 = y1 - length * Math.cos(angle * Math.PI / 180)
     let x2middle = (x1 + x2) / 2
     let y2middle = (y1 + y2) / 2
     let freq = audio.midFreqs.map(f => f.amount)
-        .reduce((f1, f2) => Math.max(f1, f2))
+        .reduce((f1, f2) => Math.max(f1, f2), 1)
     // shaky
-//    let waveSum = graphics.tree.growFactor * length + graphics.ch / 
-//            (audio.waveData[random(0, audio.waveData.length - 1)] + 1)
+//    let freq = audio.midFreqs[random(0, audio.midFreqs.length - 1)].amount 
+//        + 1
     length = graphics.tree.growFactor * length + 0.2 * freq
     angle += graphics.tree.branchAngle
     depth -= 1
@@ -151,13 +169,13 @@ const render = () => {
     // common
     graphics.ctx.globalCompositeOperation = graphics.composition
     if (graphics.clearFrames) {
-        graphics.ctx.fillStyle = graphics.background
+        graphics.ctx.fillStyle = rgbaString(graphics.background)
         graphics.ctx.fillRect(0, 0, graphics.cw, graphics.ch)
     }
+    graphics.ctx.textBaseline = 'middle'
     graphics.ctx.font = `${graphics.fontsize}px sans-serif`
     graphics.ctx.lineWidth = graphics.lineWidth
-    graphics.ctx.strokeStyle = graphics.foreground
-    graphics.ctx.lineCap = graphics.lineCap
+    graphics.ctx.strokeStyle = rgbaString(graphics.foreground)
     graphics.lineDWidthSpeed += 0.001
 
 //    graphics.lineDWidth = Math.abs(
@@ -176,7 +194,9 @@ const render = () => {
     graphics.tree.zoomLevel += zoomDelta
 
     // mode
-    if (graphics.mode === 'tree') {
+    if (graphics.mode === 'help') {
+        renderHelp()
+    } else if (graphics.mode === 'tree') {
         graphics.tree.totalbranches = 0
         graphics.tree.branchAngle += graphics.tree.rotationSpeed / 100
         graphics.angleEach = 360 / graphics.tree.branchFactor
@@ -186,12 +206,17 @@ const render = () => {
         )
         renderTree(graphics.x, graphics.y + graphics.tree.zoomLevel, 
             graphics.tree.zoomLevel, 0, graphics.tree.depth)
+        renderInfo(graphics.info)
     } else if (graphics.mode === 'oscope') {
         renderOscilloscope()
+        renderInfo(graphics.info)
     } else if (graphics.mode === 'bars') {
         renderBars()
+        renderInfo(graphics.info)
+    } else if (graphics.mode === 'lines') {
+        renderLines()
+        renderInfo(graphics.info)
     }
-    renderInfo(graphics.info)
 }
 
 const setup = () => {
@@ -199,10 +224,10 @@ const setup = () => {
     audio.analyser = audio.ctx.createAnalyser()
     graphics.canvas = document.querySelector('canvas')
     graphics.ctx = graphics.canvas.getContext('2d', { alpha: false })
-    graphics.info = graphics.defaultInfo
+    graphics.foreground = randomColor()
+    graphics.background = randomColor()
     resizeGraphics()
     initEvents()
-//    captureAudio().then(initAudio)
 }
 
 const renderLoop = () => {

@@ -2,6 +2,7 @@ import dat from 'dat.gui'
 import Stats from 'stats.js'
 import { graphics, audio } from './data'
 import { captureAudio, loadDraggedAudio, initAudio } from './audio'
+import { random, randomColor } from './utils'
 
 // TODO support all browsers webkit, moz, ie
 const prefix = (name) => {
@@ -52,6 +53,18 @@ const initEvents = () => {
                 .style.display = graphics.showFps ? 'block': 'none'
         } else if (event.key === 'i') {
             graphics.showInfo = !graphics.showInfo
+        } else if (event.key === 'd') {
+            graphics.showData = !graphics.showData
+        } else if (event.key === 'c') {
+            graphics.foreground = randomColor()
+            graphics.background = randomColor()
+        } else if (/^[0-9]$/.test(event.key)) {
+            let index = Number(event.key)
+            if (index === 0 || index > graphics.modes.length - 1) 
+                return
+            graphics.mode = graphics.modes[index]
+        } else if (event.key === '?') {
+            graphics.mode = graphics.modes[0]
         }
     })
 
@@ -96,7 +109,7 @@ const toggleFullscreen = () => {
 
 const toggleControls = () => {
     let gui = new dat.GUI()
-    gui.add(graphics, 'mode', ['tree', 'oscope', 'bars']).listen()
+    gui.add(graphics, 'mode', graphics.modes).listen()
     let tree = gui.addFolder('tree')
     tree.add(graphics.tree, 'depth').min(2).max(10).step(1).listen()
     tree.add(graphics.tree, 'branchFactor').min(1).max(16).step(1).listen()
@@ -119,8 +132,8 @@ const toggleControls = () => {
     aud.add(audio, 'fftSize', [1024, 2048, 4096, 8192]).listen()
     aud.close()
     let common = gui.addFolder('common')
-    common.addColor(graphics, 'foreground').listen()
-    common.addColor(graphics, 'background').listen()
+    common.addColor(graphics, 'foreground')
+    common.addColor(graphics, 'background')
     common.add(graphics, 'composition', [
         'source-over', 
         'hard-light',
@@ -129,7 +142,6 @@ const toggleControls = () => {
     ]).listen()
     common.add(graphics, 'lineWidth').min(0).max(20).step(0.01).listen()
     common.add(graphics, 'lineDWidth').min(0).max(20).step(0.1).listen()
-    common.add(graphics, 'lineCap', ['butt', 'round', 'square']).listen()
     common.add(graphics, 'lineCurve').listen()
     common.add(graphics, 'lineDiff').listen()
     common.add(graphics, 'showLabels').listen()
@@ -146,7 +158,7 @@ const toggleControls = () => {
     common.add(graphics, 'fullscreen').listen().onChange(toggleFullscreen)
     common.close()
     gui.remember(graphics)
-//    dat.GUI.toggleHide()
+    dat.GUI.toggleHide()
 
     let stats = new Stats()
     stats.dom.id = 'stats'
@@ -164,5 +176,5 @@ export {
     resizeGraphics, 
     toggleControls, 
     toggleMute, 
-    toggleFullscreen 
+    toggleFullscreen
 } 

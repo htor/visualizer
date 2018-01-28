@@ -2,12 +2,17 @@ const version = '0.6.0-alpha'
 
 const audio = {
     muted: false,
-    // muted: true,
-    fftSize: 8192
+    fftSize: 8192,
+    waveData: [],
+    freqData: [],
+    highFreqs: [],
+    midFreqs: [],
+    lowFreqs: []
 }
 
 const graphics = {
     mode: 'tree',
+    modes: ['help', 'tree', 'oscope', 'bars', 'lines'],
     composition: 'source-over',
     tree: {
         depth: 3,
@@ -36,8 +41,8 @@ const graphics = {
     lineDWidth: 0,
     lineDWidthSpeed: 0,
     lineCap: 'butt',
-    foreground: '#5f6daf',
-    background: '#ffffff',
+    foreground: [0, 0, 0, 1.0],
+    background: [255, 255, 255, 1.0],
     showLabels: false,
     showFps: false,
     showInfo: true,
@@ -49,14 +54,24 @@ const graphics = {
     fullscreen: false,
     info: [],
     defaultInfo: [
-        `visualizer v${version}`, 
         `drag an audio file here to start or`,
         `press r to capture audio from microphone`,
-        `press m to mute audio`,
-        `press h to toggle all options`,
-        `press f to toggle fullscreen`,
-        `zoom with mouse wheel or touchpad`,
-        ``, 
+        `press ? for help`,
+    ],
+    helpText: [
+        `scroll: zoom in tree mode`,
+        `r: capture audio from mic`,
+        `m: mute audio`,
+        `f: toggle fullscreen`,
+        `i: toggle info text`,
+        `d: toggle data text`,
+        `c: randomize colors`,
+        `h: toggle all options`,
+        `1: tree mode`, 
+        `2: oscope mode`, 
+        `3: bars mode`, 
+        `4: lines mode`, 
+        `?: show help`, 
     ]
 }
 
