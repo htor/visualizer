@@ -12,11 +12,11 @@ const audio = {
 
 const graphics = {
     mode: 'tree',
-    modes: ['help', 'tree', 'oscope', 'bars', 'lines'],
+    modes: ['help', 'tree', 'oscope', 'bars', 'spiral'],
     composition: 'source-over',
     tree: {
-        depth: 3,
-        branchFactor: 8,
+        depth: 4,
+        branchFactor: 4,
         branchAngle: 0,
         branchIncrease: true,
         growFactor: 1,
@@ -34,6 +34,10 @@ const graphics = {
         height: 2,
         width: 1,
         gap: 2
+    },
+    spiral: {
+        angle: 0,
+        zoomLevel: 565
     },
     lineCurve: false,
     lineWidth: 1,
@@ -70,7 +74,7 @@ const graphics = {
         `1: tree mode`, 
         `2: oscope mode`, 
         `3: bars mode`, 
-        `4: lines mode`, 
+        `4: spiral mode`,
         `?: show help`, 
     ]
 }

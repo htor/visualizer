@@ -83,6 +83,7 @@ const initEvents = () => {
             zoomDelta = -5
         }
         graphics.tree.zoomLevel += zoomDelta 
+        graphics.spiral.zoomLevel += zoomDelta
     })
 }
 
@@ -132,8 +133,8 @@ const toggleControls = () => {
     aud.add(audio, 'fftSize', [1024, 2048, 4096, 8192]).listen()
     aud.close()
     let common = gui.addFolder('common')
-    common.addColor(graphics, 'foreground')
-    common.addColor(graphics, 'background')
+    common.addColor(graphics, 'foreground').listen()
+    common.addColor(graphics, 'background').listen()
     common.add(graphics, 'composition', [
         'source-over', 
         'hard-light',
@@ -157,7 +158,6 @@ const toggleControls = () => {
     })
     common.add(graphics, 'fullscreen').listen().onChange(toggleFullscreen)
     common.close()
-    gui.remember(graphics)
     dat.GUI.toggleHide()
 
     let stats = new Stats()

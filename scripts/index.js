@@ -110,16 +110,16 @@ const renderBars = () => {
     graphics.ctx.restore()
 }
 
-const renderLines = () => {
+const renderSpiral = () => {
     graphics.ctx.save()
-    let barHeight
-    let barWidth = graphics.cw / audio.freqData.length + graphics.bars.width
-    for (let i = 0, x = 0; i < audio.freqData.length; i++) {
-        barHeight = Math.sin(audio.freqData[i]) * graphics.ch
-        graphics.ctx.fillStyle = rgbaString(graphics.foreground)
-        graphics.ctx.fillRect(x, 0, barWidth, graphics.ch)
-        x += barWidth + graphics.bars.gap
-    }
+    graphics.ctx.fillStyle = graphics.ctx.strokeStyle
+    graphics.ctx.translate(graphics.cw / 2, graphics.ch / 2)
+    audio.waveData.forEach((amp, i) => {
+        amp *= graphics.spiral.zoomLevel / 1000
+        graphics.ctx.strokeRect(amp, amp, amp, 1)
+        graphics.spiral.angle += 0.000001
+        graphics.ctx.rotate(graphics.spiral.angle * Math.PI / 180)
+    })
     graphics.ctx.restore()
 }
 
@@ -213,8 +213,8 @@ const render = () => {
     } else if (graphics.mode === 'bars') {
         renderBars()
         renderInfo(graphics.info)
-    } else if (graphics.mode === 'lines') {
-        renderLines()
+    } else if (graphics.mode === 'spiral') {
+        renderSpiral()
         renderInfo(graphics.info)
     }
 }
