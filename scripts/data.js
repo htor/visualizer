@@ -15,8 +15,8 @@ const graphics = {
     modes: ['help', 'tree', 'oscope', 'bars', 'spiral'],
     composition: 'source-over',
     tree: {
-        depth: 4,
-        branchFactor: 4,
+        depth: 3,
+        branchFactor: 6,
         branchAngle: 0,
         branchIncrease: true,
         growFactor: 1,
