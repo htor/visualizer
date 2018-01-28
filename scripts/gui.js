@@ -4,11 +4,6 @@ import { graphics, audio } from './data'
 import { captureAudio, loadDraggedAudio, initAudio } from './audio'
 import { random, randomColor } from './utils'
 
-// TODO support all browsers webkit, moz, ie
-const prefix = (name) => {
-    //if (name in window) return name
-}
-
 const disableEvent = (event) => {
     event.stopPropagation()
     event.preventDefault()
