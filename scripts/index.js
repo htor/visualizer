@@ -1,7 +1,7 @@
 import { initEvents, resizeGraphics, toggleControls } from './gui'
 import { version, graphics, audio } from './data'
 import { captureAudio, initAudio, analyseAudio } from './audio'
-import { random, randomColor, rgbaString } from './utils'
+import { random, randomColor, rgbaString, prefixed } from './utils'
 
 const renderLabel = (label, x, y) => {
     if (graphics.showLabels) {
@@ -220,7 +220,7 @@ const render = () => {
 }
 
 const setup = () => {
-    window.AudioContext = window.AudioContext || window.webkitAudioContext
+    window.AudioContext = prefixed('AudioContext', window)
     audio.ctx = new AudioContext()
     audio.analyser = audio.ctx.createAnalyser()
     audio.fftSize = window.webkitAudioContext ? 2048 : audio.fftSize

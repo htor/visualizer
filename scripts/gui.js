@@ -2,7 +2,14 @@ import dat from 'dat.gui'
 import Stats from 'stats.js'
 import { graphics, audio } from './data'
 import { captureAudio, loadDraggedAudio, initAudio } from './audio'
-import { random, randomColor } from './utils'
+import { random, randomColor, prefixed} from './utils'
+
+document.exitFullscreen = 
+    prefixed('exitFullscreen', document) ||
+    prefixed('cancelFullScreen', document)
+document.documentElement.requestFullscreen = 
+    prefixed('requestFullscreen', document.documentElement) || 
+    prefixed('requestFullScreen', document.documentElement)
 
 const disableEvent = (event) => {
     event.stopPropagation()
@@ -92,14 +99,12 @@ const toggleMute = () => {
 }
 
 const toggleFullscreen = () => {
-    if (!document.webkitFullscreenElement) {
-        document.documentElement.webkitRequestFullscreen()
-        graphics.fullscreen = true
+    if (graphics.fullscreen) {
+        document.exitFullscreen()
+        graphics.fullscreen = false
     } else {
-        if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen()
-            graphics.fullscreen = false
-        }
+        document.documentElement.requestFullscreen()
+        graphics.fullscreen = true
     }
 }
 

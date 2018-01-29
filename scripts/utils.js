@@ -14,5 +14,12 @@ const rgbaString = (rgba) => {
         .join() + ')'
 }
 
-export { random, randomColor, rgbaString }
+const prefixed = (name, target) => {
+    return ['', 'ms', 'moz', 'webkit'].map((p, i) =>
+        p + (i > 0 ? name.charAt(0).toUpperCase() + name.slice(1) : name)
+    ).map(pname => target[pname])
+    .filter(prefixed => prefixed)[0]
+}
+
+export { random, randomColor, rgbaString, prefixed }
 
