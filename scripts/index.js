@@ -220,8 +220,10 @@ const render = () => {
 }
 
 const setup = () => {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext
     audio.ctx = new AudioContext()
     audio.analyser = audio.ctx.createAnalyser()
+    audio.fftSize = window.webkitAudioContext ? 2048 : audio.fftSize
     graphics.canvas = document.querySelector('canvas')
     graphics.ctx = graphics.canvas.getContext('2d', { alpha: false })
     graphics.foreground = randomColor()

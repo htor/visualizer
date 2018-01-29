@@ -31,10 +31,9 @@ const loadDraggedAudio = (event) => {
         }
         reader.onload = (event) => {
             let arrayBuffer = event.target.result
-            return audio.ctx.decodeAudioData(arrayBuffer)
-                .then(decodedBuffer => {
-                    resolve({ buffer: decodedBuffer, filename: file.name })
-                })
+            audio.ctx.decodeAudioData(arrayBuffer, decodedBuffer => {
+                resolve({ buffer: decodedBuffer, filename: file.name })
+            })
         }
         graphics.info = [`loading: ${file.name}`]
         reader.readAsArrayBuffer(file)
@@ -42,7 +41,7 @@ const loadDraggedAudio = (event) => {
 }
 
 const initAudio = (audioInput) => {
-    if (audio.source instanceof AudioScheduledSourceNode)
+    if (audio.source instanceof AudioBufferSourceNode)
         audio.source.stop()
     if (audio.source && !audio.muted)
         audio.source.disconnect(audio.ctx.destination)
