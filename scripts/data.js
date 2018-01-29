@@ -1,4 +1,4 @@
-const version = '0.6.0-alpha'
+const version = '0.7.0'
 
 const audio = {
     muted: false,
@@ -11,8 +11,8 @@ const audio = {
 }
 
 const graphics = {
-    mode: 'tree',
-    modes: ['help', 'tree', 'oscope', 'bars', 'spiral'],
+    mode: 'spiral',
+    modes: ['help', 'spiral', 'oscope', 'bars', 'tree'],
     composition: 'source-over',
     tree: {
         depth: 3,
@@ -71,10 +71,10 @@ const graphics = {
         `d: toggle data text`,
         `c: randomize colors`,
         `h: toggle all options`,
-        `1: tree mode`, 
+        `1: spiral mode`, 
         `2: oscope mode`, 
         `3: bars mode`, 
-        `4: spiral mode`,
+        `4: tree mode`,
         `?: show help`, 
     ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "visualizer",
-  "version": "0.6.0-alpha",
+  "version": "0.7.0",
   "description": "",
   "private": true,
   "main": "index.html",
