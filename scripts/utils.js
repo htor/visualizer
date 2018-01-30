@@ -1,10 +1,8 @@
-const random = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1) + min)
-}
+const random = (min, max) =>
+    Math.floor(Math.random() * (max - min + 1) + min)
 
-const randomColor = () => {
-    return [0, 0, 0].map(c => random(0, 255)).concat(1.0)
-}
+const randomColor = () =>
+    [0, 0, 0].map(c => random(0, 255)).concat(1.0)
 
 const rgbaString = (rgba) => {
     return 'rgba(' +
@@ -14,12 +12,15 @@ const rgbaString = (rgba) => {
         .join() + ')'
 }
 
-const prefixed = (name, target) => {
+const vendorPrefixed = (prop, target) => {
     return ['', 'ms', 'moz', 'webkit'].map((p, i) =>
-        p + (i > 0 ? name.charAt(0).toUpperCase() + name.slice(1) : name)
-    ).map(pname => target[pname])
+        p + (i > 0 ? prop.charAt(0).toUpperCase() + prop.slice(1) : prop)
+    ).map(prefixedProp => target[prefixedProp])
     .filter(prefixed => prefixed)[0]
 }
 
-export { random, randomColor, rgbaString, prefixed }
+const vendorPrefix = (str) =>
+    ['', 'ms', 'moz', 'webkit'].map(prefix => prefix + str)
+
+export { random, randomColor, rgbaString, vendorPrefixed, vendorPrefix }
 

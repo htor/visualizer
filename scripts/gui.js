@@ -2,14 +2,14 @@ import dat from 'dat.gui'
 import Stats from 'stats.js'
 import { graphics, audio } from './data'
 import { captureAudio, loadDraggedAudio, initAudio } from './audio'
-import { random, randomColor, prefixed} from './utils'
+import { random, randomColor, vendorPrefixed, vendorPrefix } from './utils'
 
 document.exitFullscreen = 
-    prefixed('exitFullscreen', document) ||
-    prefixed('cancelFullScreen', document)
+    vendorPrefixed('exitFullscreen', document) ||
+    vendorPrefixed('cancelFullScreen', document)
 document.documentElement.requestFullscreen = 
-    prefixed('requestFullscreen', document.documentElement) || 
-    prefixed('requestFullScreen', document.documentElement)
+    vendorPrefixed('requestFullscreen', document.documentElement) || 
+    vendorPrefixed('requestFullScreen', document.documentElement)
 
 const disableEvent = (event) => {
     event.stopPropagation()
@@ -70,10 +70,15 @@ const initEvents = () => {
         }
     })
 
-    window.addEventListener('webkitfullscreenchange', (event) => {
-        if (!document.webkitFullscreenElement) {
-            graphics.showFullscreen = false
-        }
+    vendorPrefix('fullscreenchange').forEach(eventName => {
+        window.addEventListener(eventName, (event) => {
+            document.fullscreenElement =
+                vendorPrefixed('fullscreenElement', document) ||
+                vendorPrefixed('fullScreenElement', document)
+            if (!document.fullscreenElement) {
+                graphics.showFullscreen = false
+            }
+        })
     })
     
     window.addEventListener('wheel', event => {
