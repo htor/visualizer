@@ -43,15 +43,10 @@ const renderInfo = (info) => {
         info = info.concat([`mode: ${graphics.mode}`])
 
     if (graphics.showData) {
-        if (graphics.mode === 'tree')
+        if (graphics.mode === 'spiral')
             info = info.concat([
-                `total branches: ${graphics.tree.totalbranches}`,
-                `tree depth: ${graphics.tree.depth}`,
-                `branch factor: ${graphics.tree.branchFactor}`,
-                `branch angle: ${graphics.tree.branchAngle.toFixed(2)}`,
-                `grow factor: ${graphics.tree.growFactor.toFixed(2)}`,
-                `zoom level: ${graphics.tree.zoomLevel.toFixed(2)}`,
-                `linewidth: ${graphics.lineWidth}`,
+                `linewidth: ${graphics.lineWidth.toFixed(2)}`,
+                `dashwidth: ${graphics.lineDWidth.toFixed(2)}`,
             ])
         if (graphics.mode === 'oscope')
             info = info.concat([
@@ -60,12 +55,26 @@ const renderInfo = (info) => {
             ])
         if (graphics.mode === 'bars')
             info = info.concat([
-                `bar width: ${graphics.bars.width.toFixed(2)}`,
+                `bar width: ${graphics.bars.width}`,
+                `bar gap: ${graphics.bars.gap}`,
                 `bar height: ${graphics.bars.height.toFixed(2)}`,
             ])
+        if (graphics.mode === 'tree')
+            info = info.concat([
+                `total branches: ${graphics.tree.totalbranches}`,
+                `tree depth: ${graphics.tree.depth}`,
+                `branch factor: ${graphics.tree.branchFactor}`,
+                `branch angle: ${graphics.tree.branchAngle.toFixed(2)}`,
+                `grow factor: ${graphics.tree.growFactor.toFixed(2)}`,
+                `zoom level: ${graphics.tree.zoomLevel.toFixed(2)}`,
+                `linewidth: ${graphics.lineWidth.toFixed(2)}`,
+                `dashwidth: ${graphics.lineDWidth.toFixed(2)}`,
+            ])
+
         info = info.concat([
             `foreground: ${rgbaString(graphics.foreground)}`,
             `background: ${rgbaString(graphics.background)}`,
+            `composition: ${graphics.composition}`,
             `fps: ${graphics.fps}`,
         ])
     }
