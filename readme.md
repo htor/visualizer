@@ -15,3 +15,7 @@ npm start
 ```
 
 It should open in your browser.
+
+# license
+
+MIT
