@@ -7,7 +7,7 @@ https://hermantorjussen.no/visualizer/
 
 # installing
 
-Clone this repo and with [npm](https://npmjs.com/) do:
+Clone this repo and with [npm](https://npmjs.com/) and do:
 
 ```
 npm install
