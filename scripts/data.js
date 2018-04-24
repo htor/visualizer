@@ -11,7 +11,7 @@ const audio = {
 }
 
 const graphics = {
-    mode: 'spiral',
+    mode: 'tree',
     modes: ['help', 'spiral', 'oscope', 'bars', 'tree'],
     composition: 'source-over',
     tree: {
